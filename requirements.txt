@@ -1,6 +1,4 @@
-linebot
-linebot.exceptions
-linebot.models
+line-bot-sdk
 json
 flask
 Gunicorn
