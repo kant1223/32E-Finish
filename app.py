@@ -8,7 +8,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 access_token = '8zp872p8zjIBjP89c4dtoPewB239ZuOuA62gIShbHcMuBBvssLb8f2fep9rFmVMGh5TBVgoo55L7S0KDYzNgy0+NGvmieYfx7DwunGMlmKefVPjWo0MPrpS3mMDCoAagqJCHIhbKoTRMjbbhx8BTKwdB04t89/1O/w1cDnyilFU='
 secret = '575a9bb8ae3a9aa680e0dfb69f5f2750'
-app = flask(__name__)
+app = Flask(__name__)
 
 @app.route("/", methods=['POST'])
 def linebot():
@@ -30,8 +30,8 @@ def linebot():
 
 if __name__ == "__main__":
     app.run()
-    run_with_ngrok(app)
-    app.run(host='0.0.0.0', port=5000)
+    #run_with_ngrok(app)
+    #app.run(host='0.0.0.0', port=5000)
 
 #import os
 #if __name__ == "__main__":
