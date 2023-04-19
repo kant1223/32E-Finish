@@ -1,37 +1,38 @@
 #!/usr/bin/env python
 # coding: utf-8
-from flask_ngrok import run_with_ngrok
-from flask import Flask, request
+import os
 
-# 載入 LINE Message API 相關函式庫
+from flask import Flask
 from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
-access_token="8zp872p8zjIBjP89c4dtoPewB239ZuOuA62gIShbHcMuBBvssLb8f2fep9rFmVMGh5TBVgoo55L7S0KDYzNgy0+NGvmieYfx7DwunGMlmKefVPjWo0MPrpS3mMDCoAagqJCHIhbKoTRMjbbhx8BTKwdB04t89/1O/w1cDnyilFU="
-secret="575a9bb8ae3a9aa680e0dfb69f5f2750"
-# 載入 json 標準函式庫，處理回傳的資料格式
-import json
 
 app = Flask(__name__)
 
-@app.route("/", methods=['POST'])
-def linebot():
-    body = request.get_data(as_text=True)                    # 取得收到的訊息內容
+line_bot_api = LineBotApi(access_token)
+handler = WebhookHandler(secret)
+
+# 利用 handler 處理 LINE 觸發事件
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
+
+@handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    line_bot_api.reply_message(
+        event.reply_token, TextSendMessage(text=f"Hello {line_bot_api.get_profile(event.source.user_id).display_name}!")
+    )
+
+# 利用 route 處理路由
+from flask import request, abort
+from linebot.exceptions import InvalidSignatureError
+
+@app.route("/callback", methods=['POST'])
+def callback():
+    signature = request.headers['X-Line-Signature']
+
+    body = request.get_data(as_text=True)
+    app.logger.info("Request body: " + body)
+
     try:
-        json_data = json.loads(body)                         # json 格式化訊息內容
-        access_token = access_token
-        secret = secret
-        line_bot_api = LineBotApi(access_token)              # 確認 token 是否正確
-        handler = WebhookHandler(secret)                     # 確認 secret 是否正確
-        signature = request.headers['X-Line-Signature']      # 加入回傳的 headers
-        handler.handle(body, signature)                      # 綁定訊息回傳的相關資訊
-        msg = json_data['events'][0]['message']['text']      # 取得 LINE 收到的文字訊息
-        tk = json_data['events'][0]['replyToken']            # 取得回傳訊息的 Token
-        line_bot_api.reply_message(tk,TextSendMessage(msg))  # 回傳訊息
-        print(msg, tk)                                       # 印出內容
-    except:
-        print(body)                                          # 如果發生錯誤，印出收到的內容
-    return 'OK'                 # 驗證 Webhook 使用，不能省略
-if __name__ == "__main__":
-  run_with_ngrok(app)           # 串連 ngrok 服務
-  app.run()
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        abort(400)
+
+    return 'OK'
