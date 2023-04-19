@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 import os
-
+secret="575a9bb8ae3a9aa680e0dfb69f5f2750"
+access_token='8zp872p8zjIBjP89c4dtoPewB239ZuOuA62gIShbHcMuBBvssLb8f2fep9rFmVMGh5TBVgoo55L7S0KDYzNgy0+NGvmieYfx7DwunGMlmKefVPjWo0MPrpS3mMDCoAagqJCHIhbKoTRMjbbhx8BTKwdB04t89/1O/w1cDnyilFU=/'
 from flask import Flask
 from linebot import LineBotApi, WebhookHandler
 
