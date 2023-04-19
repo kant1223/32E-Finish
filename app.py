@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 from flask import Flask, request
+import os
 import json
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -28,8 +29,8 @@ def linebot():
         print('error')
     return 'OK'
 
-if __name__ == "__main__":
-    app.run()
+#if __name__ == "__main__":
+ #   app.run()
     #run_with_ngrok(app)
     #app.run(host='0.0.0.0', port=5000)
 
