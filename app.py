@@ -1,38 +1,32 @@
-#!/usr/bin/env python
-# coding: utf-8
-#TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Apr 21 11:20:15 2023
 
-
-#from flask_ngrok import run_with_ngrok   # colab 使用，本機環境請刪除
-from flask import Flask, request
-from linebot import LineBotApi, WebhookHandler
-from linebot.models import TextSendMessage   # 載入 TextSendMessage 模組
-import json
-
-app = Flask(__name__)
-
-@app.route("/", methods=['POST'])
-def linebot():
-    body = request.get_data(as_text=True)
-    json_data = json.loads(body)
-    print(json_data)
-    try:
-        line_bot_api = LineBotApi(os.getenv('access_token'))
-    #    line_bot_api = LineBotApi(access_token)              # 確認 token 是否正確
-        handler = WebhookHandler(os.getenv('secret'))                     # 確認 secret 是否正確
-        signature = request.headers['X-Line-Signature']
-        handler.handle(body, signature)
-        tk = json_data['events'][0]['replyToken']         # 取得 reply token
-        msg = json_data['events'][0]['message']['text']   # 取得使用者發送的訊息
-        text_message = TextSendMessage(text=msg)          # 設定回傳同樣的訊息
-        line_bot_api.reply_message(tk,text_message)       # 回傳訊息
-    except:
-        print('error')
-    return 'OK'
-
+@author: kangyaxiu≥
+"""
+#from dotenv import load_dotenv
+#load_dotenv()
 import os
-if __name__ == "__main__":
- #   app.run()
-    port=5000
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+import json
+import pygsheets
+import time
+#權杖位置
+file = os.getenv ("file")
+gc = pygsheets.authorize(service_file=file)
+#gc = pygsheets.authorize(service_account_env_var = 'GDRIVE_API_CREDENTIALS')
+survey_url = 'https://docs.google.com/spreadsheets/d/1t-URenLmeFQYxJQhjhHhilm1nNf_TfXXmrrF00kwFlk/edit#gid=0'#試算表ＩＤ
+sh = gc.open_by_url(survey_url)
+ws = sh.worksheet_by_title('工作表1')   #在哪個工作表作業
+val = ws.get_value('A1')#從哪裡讀取
+df = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
+print(df)
+time.sleep(60)
+print("等了60秒")
+
+
+#a=os.getenv ("HOME")
+#print(a)
+
+
+
