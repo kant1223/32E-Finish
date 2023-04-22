@@ -8,8 +8,8 @@ Created on Fri Apr 21 23:29:43 2023
 
 ###############################
 #要刪的東東
-from dotenv import load_dotenv
-load_dotenv()
+#from dotenv import load_dotenv
+#load_dotenv()
 
 ###########################
 
