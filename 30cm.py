@@ -104,8 +104,8 @@ df = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_emp
 
 
 
-from dotenv import load_dotenv
-load_dotenv()
+#from dotenv import load_dotenv
+#load_dotenv()
 
 from flask import Flask, request
 import json
