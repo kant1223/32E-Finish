@@ -5,6 +5,12 @@ Created on Fri Apr 21 11:20:15 2023
 
 @author: kangyaxiu≥
 """
+######
+#from dotenv import load_dotenv
+#load_dotenv()
+########
+
+
 
 
 import fun #載入函數褲
@@ -87,25 +93,17 @@ import os
 
 
 import pygsheets
+#從google抓工作表1
+
 file=os.getenv ("file")#權杖位置
 gc = pygsheets.authorize(service_file=file)
-sh = gc.open_by_url(os.getenv ("survey_url"))
+survey_url = os.getenv ("survey_url")
+sh = gc.open_by_url(survey_url)
 ws = sh.worksheet_by_title('工作表1')   #在哪個工作表作業
 val = ws.get_value('A1')#從哪裡讀取
 df = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
 
 
-
-
-
-
-
-
-
-
-
-#from dotenv import load_dotenv
-#load_dotenv()
 
 from flask import Flask, request
 import json
@@ -149,13 +147,14 @@ def linebot():
                 sh = gc.open_by_url(survey_url)
                 ws = sh.worksheet_by_title('使用紀錄')   #在哪個工作表作業
                 val = ws.get_value('A1')#從哪裡讀取
-                df = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
+                df1 = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
 
-                df=pd.concat([df,df_j],axis=0)
+                df1=pd.concat([df1,df_j],axis=0)
 
-                ws.set_dataframe(df, 'A1', copy_index=True, nan='')
-        except:     
+                ws.set_dataframe(df1, 'A1', copy_index=True, nan='')
+        except:
             pass
+
         tk = json_data['events'][0]['replyToken']            # 取得回傳訊息的 Token
         userid=json_data['events'][0]["source"]['userId']     #取得回傳訊息的 userId
 
@@ -169,9 +168,9 @@ def linebot():
 
         #statusMessage = profile_date['statusMessage']
         name = profile_date['displayName']                    #取得使用者姓名
-        print("profile",profile)
-        print("json_data",json_data)
-        print("使用者姓名:",name,"\n使用者使用者id:",userid,"\n照片：",pictureUrl)
+        #print("profile",profile)
+        #print("json_data",json_data)
+        #print("使用者姓名:",name,"\n使用者使用者id:",userid,"\n照片：",pictureUrl)
         signature = request.headers['X-Line-Signature']      # 加入回傳的 headers
         handler.handle(body, signature)                      # 綁定訊息回傳的相關資訊
         
@@ -200,7 +199,7 @@ def linebot():
                     pass
             else:
                 out_msg=TextSendMessage(menu)
-                print(menu)
+                #print(menu)
         fun.to_google_sheet(json_data,profile_date)
         line_bot_api.reply_message(tk,out_msg)# 回傳訊息
         print("伺服器接收到的訊息:\n"+ msg + ",","\n使用者姓名：", name)                                       # 印出接收到的內容
@@ -208,8 +207,8 @@ def linebot():
     except:
         print("body",body)                                          # 如果發生錯誤，印出收到的內容
     return 'OK'                 # 驗證 Webhook 使用，不能省略
-#if __name__ == "__main__":
- #   app.run()
+if __name__ == "__main__":
+    app.run()
 
 
 
