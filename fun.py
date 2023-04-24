@@ -8,8 +8,8 @@ Created on Fri Apr 21 23:29:43 2023
 
 ###############################
 #要刪的東東
-#from dotenv import load_dotenv
-#load_dotenv()
+from dotenv import load_dotenv
+load_dotenv()
 
 ###########################
 
@@ -30,6 +30,45 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSend
 import string   #拿掉標點符號
 #時間
 from datetime import datetime
+
+
+
+import pygsheets
+import time
+def readdata(new_time,update＿time):
+    
+    new_time=float(new_time)
+    update＿time=float(update＿time)
+    try:
+        if new_time-update_time>518400:
+            file=os.getenv ("file")#權杖位置
+            gc = pygsheets.authorize(service_file=file)
+            sh = gc.open_by_url(os.getenv ("survey_url"))
+            ws = sh.worksheet_by_title("工作表1")   #在哪個工作表作業
+            val = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
+            val.to_csv("mm.txt")
+            update_time=new_time
+            print("更新完成")
+        else:
+            
+            #print(time.localtime(update＿time))
+            x=time.localtime(update＿time)
+            print(f'上次更新時間:{str(x.tm_year).zfill(2)}/{str(x.tm_mon).zfill(2)}/{str(x.tm_mday).zfill(2)}  '
+                  f'{str(x.tm_hour).zfill(2)}:{str(x.tm_min).zfill(2)}:{str(x.tm_sec).zfill(2)}')
+    
+    except:
+        #new_time=time.time()
+        update＿time=1.0
+        file=os.getenv ("file")#權杖位置
+        gc = pygsheets.authorize(service_file=file)
+        sh = gc.open_by_url(os.getenv ("survey_url"))
+        ws = sh.worksheet_by_title("工作表1")   #在哪個工作表作業
+        val = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
+        val.to_csv("mm.txt")        
+        print("初始化完成")
+    return [new_time,update＿time]
+
+
 
 
 
@@ -61,26 +100,6 @@ def to_google_sheet(json_data,profile_date):
             df_j=pd.DataFrame(x)
             df_j=df_j.T
             df_j.columns = ['userId','time',"type","text"]
-
-
-
-        # elif  m_type == "image":
-        #     x=[json_data['events'][0]['source']['userId'],str(msg_time),json_data['events'][0]['message']['type'],
-        #    json_data['events'][0]['message']['id']]
-        #     df_j=pd.DataFrame(x)
-        #     df_j=df_j.T
-        #     df_j.columns = ['userId','time',"type","image_ID"]
-
-
-
-        # elif  m_type == "video":
-        #     x=[json_data['events'][0]['source']['userId'],str(msg_time),json_data['events'][0]['message']['type'],
-        #    json_data['events'][0]['message']['id']]
-        #     df_j=pd.DataFrame(x)
-        #     df_j=df_j.T
-        #     df_j.columns = ['userId','time',"type","video_ID"]
-
-
         else:
             x=[json_data['events'][0]['source']['userId'],str(msg_time),json_data['events'][0]['message']['type']]
             df_j=pd.DataFrame(x)
@@ -95,7 +114,6 @@ def to_google_sheet(json_data,profile_date):
     gc = pygsheets.authorize(service_file=file)
     sh = gc.open_by_url(os.getenv ("survey_url"))
     ws = sh.worksheet_by_title("使用紀錄")   #在哪個工作表作業
-    val = ws.get_value('A1')#從哪裡讀取
     df = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
 
 

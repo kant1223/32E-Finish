@@ -6,8 +6,8 @@ Created on Fri Apr 21 11:20:15 2023
 @author: kangyaxiu≥
 """
 ######
-#from dotenv import load_dotenv
-#load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 ########
 
 
@@ -57,7 +57,7 @@ menu="""你好～目前輸入的格式可能有誤，麻煩你再確認一下呦
 
 
 
-# import time
+import time
 # new_time=time.time()#時間數字
 # try:
 #     if new_time-uptime>86400:
@@ -90,18 +90,22 @@ menu="""你好～目前輸入的格式可能有誤，麻煩你再確認一下呦
 
 
 import os
-
-
+import pandas as pd
 import pygsheets
-#從google抓工作表1
 
-file=os.getenv ("file")#權杖位置
-gc = pygsheets.authorize(service_file=file)
-survey_url = os.getenv ("survey_url")
-sh = gc.open_by_url(survey_url)
-ws = sh.worksheet_by_title('工作表1')   #在哪個工作表作業
-val = ws.get_value('A1')#從哪裡讀取
-df = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
+
+
+
+x=open("v.txt","r")
+data = x.read()
+data_into_list = data.split("\n")
+x.close()
+y=fun.readdata(time.time(),data_into_list[1])
+df = pd.read_csv("mm.txt")
+f=open("v.txt","w")
+data_into_list = [str(y[0])+"\n", str(y[1])]
+f.writelines(data_into_list)
+f.close()
 
 
 
@@ -140,13 +144,13 @@ def linebot():
                 df_j=df_j.T
                 df_j.columns = ['userId','time',"type"]
                 #    df.append(df_j)
-                #從google抓消費資料
+                #從google抓使用紀錄
                 file=os.getenv ("file")#權杖位置
                 gc = pygsheets.authorize(service_file=file)
                 survey_url = os.getenv ("survey_url")
                 sh = gc.open_by_url(survey_url)
                 ws = sh.worksheet_by_title('使用紀錄')   #在哪個工作表作業
-                val = ws.get_value('A1')#從哪裡讀取
+
                 df1 = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
 
                 df1=pd.concat([df1,df_j],axis=0)
@@ -207,8 +211,8 @@ def linebot():
     except:
         print("body",body)                                          # 如果發生錯誤，印出收到的內容
     return 'OK'                 # 驗證 Webhook 使用，不能省略
-if __name__ == "__main__":
-    app.run()
+#if __name__ == "__main__":
+ #   app.run()
 
 
 

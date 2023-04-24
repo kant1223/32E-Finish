@@ -1,3 +1,5 @@
+upgrade pip
+python-dotenv
 line-bot-sdk
 flask
 gunicorn
