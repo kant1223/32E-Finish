@@ -6,8 +6,9 @@ Created on Fri Apr 21 11:20:15 2023
 @author: kangyaxiu≥
 """
 ######
-from dotenv import load_dotenv
-load_dotenv()
+#要刪的東東
+# from dotenv import load_dotenv
+# load_dotenv()
 ########
 from flask import Flask, request
 import json
