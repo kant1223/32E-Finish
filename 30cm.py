@@ -6,12 +6,27 @@ Created on Fri Apr 21 11:20:15 2023
 @author: kangyaxiu≥
 """
 ######
-# from dotenv import load_dotenv
-# load_dotenv()
+from dotenv import load_dotenv
+load_dotenv()
 ########
+from flask import Flask, request
+import json
+
+import os
+import pandas as pd
+import pygsheets
+
+
+# 載入 LINE Message API 相關函式庫
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError, LineBotApiError
+from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage, StickerSendMessage
+import string   #拿掉標點符號
+import pandas as pd
 
 
 
+import time
 
 import fun #載入函數褲
 
@@ -57,7 +72,6 @@ menu="""你好～目前輸入的格式可能有誤，麻煩你再確認一下呦
 
 
 
-import time
 # new_time=time.time()#時間數字
 # try:
 #     if new_time-uptime>86400:
@@ -89,9 +103,6 @@ import time
 
 
 
-import os
-import pandas as pd
-import pygsheets
 
 
 
@@ -101,7 +112,7 @@ data = x.read()
 data_into_list = data.split("\n")
 x.close()
 y=fun.readdata(time.time(),data_into_list[1])
-df = pd.read_csv("mm.txt")
+
 f=open("v.txt","w")
 data_into_list = [str(y[0])+"\n", str(y[1])]
 f.writelines(data_into_list)
@@ -109,16 +120,19 @@ f.close()
 
 
 
-from flask import Flask, request
-import json
+df = pd.read_csv("mm.txt")
+df.index = [df.iloc[:,0]]  #自訂索引值columns = [df.iloc[:,1]]  #自訂欄位名稱
+
+for i in df.keys():
+    df[i]=df[i].apply(str)
 
 
-# 載入 LINE Message API 相關函式庫
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError, LineBotApiError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage, StickerSendMessage
-import string   #拿掉標點符號
-import pandas as pd
+#print(df,type(df))
+
+
+
+
+
 
 
 
@@ -133,13 +147,16 @@ def linebot():
     
     try:
         json_data = json.loads(body)                         # json 格式化訊息內容
+        print("又來1")
         line_bot_api = LineBotApi(os.getenv ("access_token"))              # 確認 token 是否正確
+        print("又來2")
         handler = WebhookHandler(os.getenv ("secret"))                     # 確認 secret 是否正確
+        print("又來3")
         try: 
             if json_data['events'][0]['type']=='unfollow':
                 x=[json_data['events'][0]['source']['userId'],
-                   str(pd.to_datetime(json_data['events'][0]['timestamp']+28800000, unit='ms')),
-                   json_data['events'][0]['type']]
+                    str(pd.to_datetime(json_data['events'][0]['timestamp']+28800000, unit='ms')),
+                    json_data['events'][0]['type']]
                 df_j=pd.DataFrame(x)
                 df_j=df_j.T
                 df_j.columns = ['userId','time',"type"]
@@ -157,13 +174,20 @@ def linebot():
 
                 ws.set_dataframe(df1, 'A1', copy_index=True, nan='')
         except:
-            pass
-
+            print("行號171")
+        json_data = json.loads(body)                         # json 格式化訊息內容
+        print("該死的行號176")
+        line_bot_api = LineBotApi(os.getenv ("access_token"))              # 確認 token 是否正確
+        print("該死的行號178")
+        handler = WebhookHandler(os.getenv ("secret"))                     # 確認 secret 是否正確
+        print("該死的行號180")
         tk = json_data['events'][0]['replyToken']            # 取得回傳訊息的 Token
+        print("該死的行號182")
         userid=json_data['events'][0]["source"]['userId']     #取得回傳訊息的 userId
-
+        print("該死的行號182")
+        line_bot_api = LineBotApi(os.getenv ("access_token"))
         profile = line_bot_api.get_profile(userid)            #取得相關資訊(姓名,照片,個簽,id)
-
+        print("該死的行號186")
         profile = str(profile)
 
         profile_date = json.loads(profile)                     #包裹轉字典
@@ -177,7 +201,8 @@ def linebot():
         #print("使用者姓名:",name,"\n使用者使用者id:",userid,"\n照片：",pictureUrl)
         signature = request.headers['X-Line-Signature']      # 加入回傳的 headers
         handler.handle(body, signature)                      # 綁定訊息回傳的相關資訊
-        
+        print("json_data",json_data)
+        print("profile_date",profile_date)
         #print("資料型態：")                                    #  line 回傳為回傳為格式是格式是str
         #m_type=json_data['events'][0]['message']['type']
         #print("m_type",m_type)
@@ -188,31 +213,43 @@ def linebot():
             m_type=json_data['events'][0]['message']['type']
             if m_type == "text":
                 msg = json_data['events'][0]['message']['text']      # 取得 LINE 收到的文字訊息
+                print("該死的行號226")
                 out_msg=TextSendMessage(name+menu)
                 
                 try:
                     
                     out_msg=fun.transaction_records1(df,msg)
-                    print(out_msg)
+                    #print("transaction_records1(df,msg)")
                 except:
                     
                     pass
+                
                 try:
                     out_msg=fun.trial_calculation(msg,name)
                 except:
                     pass
+                
             else:
                 out_msg=TextSendMessage(menu)
                 #print(menu)
+        print("該死的行號245")
         fun.to_google_sheet(json_data,profile_date)
+        print("該死的行號247")
         line_bot_api.reply_message(tk,out_msg)# 回傳訊息
+        print("該死的行號249")
         print("伺服器接收到的訊息:\n"+ msg + ",","\n使用者姓名：", name)                                       # 印出接收到的內容
         print("伺服器傳送的訊息:\n"+ out_msg + ",","\n使用者姓名：", name)                        #輸出的訊息
     except:
         print("body",body)                                          # 如果發生錯誤，印出收到的內容
     return 'OK'                 # 驗證 Webhook 使用，不能省略
+# if __name__ == "__main__":
+#     # app.run()
+#     port=port
+#import os
 #if __name__ == "__main__":
- #   app.run()
+ #   port = int(os.environ.get('PORT', 5000))
+  #  app.run(host='0.0.0.0', port=port)
+    
 
 
 
