@@ -40,7 +40,7 @@ def readdata(new_time,update＿time):
     new_time=float(new_time)
     update＿time=float(update＿time)
     try:
-        if new_time-update_time>518400:
+        if new_time-update_time>259200:
             file=os.getenv ("file")#權杖位置
             gc = pygsheets.authorize(service_file=file)
             sh = gc.open_by_url(os.getenv ("survey_url"))
