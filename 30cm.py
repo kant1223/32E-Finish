@@ -208,7 +208,7 @@ def linebot():
                     for j in range(y.shape[0]):
                         for i in range(len(y.iloc[j,:])):
                             if i == y.shape[1]-1:
-                                c+=columns_list[i]+":"+str(y.iloc[j,i])
+                                #c+=columns_list[i]+":"+str(y.iloc[j,i])
                                 a=c
                                 shoppy_list.append(a)
                                 c=""
@@ -223,11 +223,13 @@ def linebot():
                             text=f'商品名稱:{y["商品名稱"][i]}\n貨物狀況:{y["貨物狀況"][i]}',
                             actions=[
                                 PostbackAction(
-                                    label='此筆詳細記錄消費紀錄',
+                                    label='點我觀看該筆消費紀錄',
                                     display_text=shoppy_list[i],
                                     data='action=buy&itemid=1'
-                                 )]
-                                )
+                                 ),URIAction(
+                        label='點我看商品放大圖',
+                        uri=x["圖片名稱"][i]
+                                )])
                         asd.append(c)
                     # print("這裡4")
                     out_msg = TemplateSendMessage(
@@ -256,7 +258,7 @@ def linebot():
         print("存檔完成")
         print("_____________________________________________________________")
         print("伺服器接收到的訊息:\n", msg ,"\n使用者姓名：", name)                                       # 印出接收到的內容
-        print("伺服器傳送的訊息:\n", carousel_template_message ,"\n使用者姓名：", name)                        #輸出的訊息
+        print("伺服器傳送的訊息:\n", out_msg ,"\n使用者姓名：", name)                        #輸出的訊息
         print("_____________________________________________________________")
     except:
         print("錯誤",body)                                          # 如果發生錯誤，印出收到的內容
