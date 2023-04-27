@@ -21,7 +21,7 @@ import pygsheets
 # 載入 LINE Message API 相關函式庫
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage, StickerSendMessage
+from linebot.models import *
 import string   #拿掉標點符號
 import pandas as pd
 
@@ -71,69 +71,6 @@ menu="""你好～目前輸入的格式可能有誤，麻煩你再確認一下呦
 若有其他問題歡迎私訊抱米香官方帳號詢問～"""
 
 
-
-
-# new_time=time.time()#時間數字
-# try:
-#     if new_time-uptime>86400:
-#         fun.google_token() #google 授權
-#         print("已重新授權")
-#         uptime=time.time()
-#     else:
-#         #print(time.localtime(b))
-#         x=time.localtime(uptime)
-#         print(f'上次更新時間:{str(x.tm_year).zfill(2)}/{str(x.tm_mon).zfill(2)}/{str(x.tm_mday).zfill(2)}  '
-#               f'{str(x.tm_hour).zfill(2)}:{str(x.tm_min).zfill(2)}:{str(x.tm_sec).zfill(2)}')
-# except:
-#     try:
-#         uptime=0
-#         if new_time-uptime>36400:
-#             fun.google_token() #google 授權
-#             print("已取得google授權")
-#             uptime=time.time()
-#         else:
-#             print("D")
-#             #print(time.localtime(b))
-#             x=time.localtime(uptime)
-#             print(f'上次更新時間:{str(x.tm_year).zfill(2)}/{str(x.tm_mon).zfill(2)}/{str(x.tm_mday).zfill(2)}  '
-#                   f'{str(x.tm_hour).zfill(2)}:{str(x.tm_min).zfill(2)}:{str(x.tm_sec).zfill(2)}')
-#     except:
-#         print("time err")
-
-
-
-
-
-
-
-
-
-# x=open("v.txt","r")
-# data = x.read()
-# data_into_list = data.split("\n")
-# x.close()
-# y=fun.readdata(time.time(),data_into_list[1])
-
-# f=open("v.txt","w")
-# data_into_list = [str(y[0])+"\n", str(y[1])]
-# f.writelines(data_into_list)
-# f.close()
-
-
-
-# df = pd.read_csv("mm.txt")
-# df.index = [df.iloc[:,0]]  #自訂索引值columns = [df.iloc[:,1]]  #自訂欄位名稱
-
-# for i in df.keys():
-#     df[i]=df[i].apply(str)
-
-
-#print(df,type(df))
-
-
-
-# access_token=os.getenv ("access_token")
-# print(access_token)
 
 
 
@@ -211,7 +148,7 @@ def linebot():
         tk = json_data['events'][0]['replyToken']            # 取得回傳訊息的 Token
         print("取得回傳訊息的 Token")
         userid=json_data['events'][0]["source"]['userId']     #取得回傳訊息的 userId
-        print("取得回傳訊息的 userId",type(userid),userid)
+       # print("取得回傳訊息的 userId",type(userid),userid)
    #     line_bot_api = LineBotApi(os.getenv ("access_token"))
     #    print("再次取得 token")
         profile = line_bot_api.get_profile(userid)            #取得相關資訊(姓名,照片,個簽,id)
@@ -245,9 +182,60 @@ def linebot():
                 out_msg=TextSendMessage(name+menu)
                 
                 try:
+        #####貨況查詢#####貨況查詢####貨況查詢###貨況查詢######貨況查詢#####
                     
-                    out_msg=fun.transaction_records1(df,msg)
-                    #print("transaction_records1(df,msg)")
+                    msg = msg.translate(str.maketrans('',""," "+'；，。：'+string.punctuation))
+                    key_word=["貨況","貨況查詢","貨况查询"]
+                    for i in key_word:
+                        if i in msg:
+                            msg1 = msg.partition(i)
+                            y = list(msg1)
+                            name_id = y[y.index(i)+1]
+                    x=df.loc[[name_id][:]]#抓取消費紀錄
+                    if x.shape[0] >=10:              #計算消費次數,大於2顯示前三筆,小於2顯示全部
+                        x=x.iloc[:10]
+                    else:
+                        x=x.iloc[:]
+                    y=x.drop(["姓名+身分證末四碼",'身分證末四碼',"圖片名稱","身份證字號"], axis=1)           #刪除不需要的欄位
+                    columns_list = y.columns.values.tolist()        #將表頭設成list
+                    z=x["圖片名稱"].values.tolist()                #圖片名稱轉list
+                    
+                    # print("這裡2")
+                    #抓取單筆資料放入list
+                    shoppy_list=[]
+                    a=""
+                    c=""
+                    for j in range(y.shape[0]):
+                        for i in range(len(y.iloc[j,:])):
+                            if i == y.shape[1]-1:
+                                c+=columns_list[i]+":"+str(y.iloc[j,i])
+                                a=c
+                                shoppy_list.append(a)
+                                c=""
+                            else:
+                                c+=columns_list[i]+":"+str(y.iloc[j,i])+"\n"
+                    asd=[]
+                    # print("這裡3")
+                    for i in range(y.shape[0]):
+                        c=CarouselColumn(
+                            thumbnail_image_url=z[i],
+                            title=x.iloc[0][2],
+                            text=f'商品名稱:{y["商品名稱"][i]}\n貨物狀況:{y["貨物狀況"][i]}',
+                            actions=[
+                                PostbackAction(
+                                    label='此筆詳細記錄消費紀錄',
+                                    display_text=shoppy_list[i],
+                                    data='action=buy&itemid=1'
+                                 )]
+                                )
+                        asd.append(c)
+                    # print("這裡4")
+                    out_msg = TemplateSendMessage(
+                        alt_text='您於抱米香的消費紀錄',
+                        template=CarouselTemplate(image_aspect_ratio='rectangle',image_size='contain',
+                                                  columns=asd))
+                    
+#####
                 except:
                     
                     pass
@@ -260,6 +248,7 @@ def linebot():
             else:
                 out_msg=TextSendMessage(menu)
                 #print(menu)
+
         print("245/249快跑完了")
         line_bot_api.reply_message(tk,out_msg)# 回傳訊息
         print("已經回傳訊息")
@@ -267,18 +256,16 @@ def linebot():
         print("存檔完成")
         print("_____________________________________________________________")
         print("伺服器接收到的訊息:\n", msg ,"\n使用者姓名：", name)                                       # 印出接收到的內容
-        print("伺服器傳送的訊息:\n", out_msg ,"\n使用者姓名：", name)                        #輸出的訊息
+        print("伺服器傳送的訊息:\n", carousel_template_message ,"\n使用者姓名：", name)                        #輸出的訊息
         print("_____________________________________________________________")
     except:
         print("錯誤",body)                                          # 如果發生錯誤，印出收到的內容
     return 'OK'                 # 驗證 Webhook 使用，不能省略
-# if __name__ == "__main__":
-#     app.run()
-#     port=port
-# import os
-# if __name__ == "__main__":
-#     port = int(os.environ.get('PORT', 5000))
-#     app.run(host='0.0.0.0', port=port)
+
+import os
+if __name__ == "__main__":
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
     
 
 

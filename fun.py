@@ -26,7 +26,7 @@ import json
 # 載入 LINE Message API 相關函式庫
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage, StickerSendMessage
+from linebot.models import *
 import string   #拿掉標點符號
 #時間
 from datetime import datetime
@@ -131,81 +131,7 @@ def to_google_sheet(json_data,profile_date):
     ws.set_dataframe(df, 'A1', copy_index=True, nan='')
 
 
-def google_token():
-    file=os.getenv ("file")#權杖位置
-    gc = pygsheets.authorize(service_file=file)
-    survey_url = os.getenv ("survey_url")
 
-def transaction_records1(df,msg):
-    msg = msg.translate(str.maketrans('',""," "+'；，。：'+string.punctuation))
-    key_word=["貨況","貨況查詢","貨况查询"]
-    for i in key_word:
-        if i in msg:
-            msg1 = msg.partition(i)
-            y = list(msg1)
-            name_id = y[y.index(i)+1]
-    x=df.loc[[name_id][:]]#抓取消費紀錄
-    if x.shape[0] >=2:              #計算消費次數,大於2顯示前三筆,小於2顯示全部
-        x=x.iloc[:2]
-    else:
-        x=x.iloc[:]
-    y=x.drop(['身分證末四碼',"圖片名稱","身份證字號"], axis=1)           #刪除不需要的欄位
-    z=x["圖片名稱"].values.tolist()                #圖片名稱轉list
-    columns_list = y.columns.values.tolist()        #將表頭設成list
-    #print(columns_list)
-    name_w=x.iloc[0][2]+'您好:\n您的近期消費紀錄如下：\n'
-    #list1 = x.values.tolist()
-    t1=""                                             #設定暫存
-    t2=""
-    if y.shape[0]==2:
-        for i in range(y.shape[0]):
-            for j in range(y.shape[1]):
-                if j == y.shape[1]-1:
-                    t1+=columns_list[j]+":"+y.iloc[i][j]+'\n\n'  #將兩筆資料分開（排版）
-
-                else:
-                    t1+=columns_list[j]+":"+y.iloc[i][j]+'\n'
-            break
-
-
-        i=1
-        for j in range(y.shape[1]):
-            if j == y.shape[1]-1:
-                t2+=columns_list[j]+":"+y.iloc[i][j]+'\n\n'  #將兩筆資料分開（排版）
-
-            else:
-                t2+=columns_list[j]+":"+y.iloc[i][j]+'\n'
-    else:
-        for i in range(y.shape[0]):
-            for j in range(y.shape[1]):
-                if j == y.shape[1]-1:
-                    t1+=columns_list[j]+":"+y.iloc[i][j]+'\n\n'  #將兩筆資料分開（排版）
-
-                else:
-                    t1+=columns_list[j]+":"+y.iloc[i][j]+'\n'
-            break
-        
-    
-
-
-    #print("t1",t1,"t2",t2)
-
-    if len(z)==1:
-        p1=ImageSendMessage(
-            original_content_url =z[0]
-            ,preview_image_url = z[0])
-        t1=TextSendMessage(t1)
-        out=[p1,t1]
-        
-    else:
-        p1=ImageSendMessage(
-            original_content_url = z[0],preview_image_url = z[0])
-        p2=ImageSendMessage(
-            original_content_url = z[1],preview_image_url = z[1])
-        t1=TextSendMessage(t1)
-        t2=TextSendMessage(t2)
-        out=[p1,t1,p2,t2]
-    return out 
 
 
 
