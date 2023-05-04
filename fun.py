@@ -44,7 +44,7 @@ def readdata(new_time,update＿time):
             file=os.getenv ("file")#權杖位置
             gc = pygsheets.authorize(service_file=file)
             sh = gc.open_by_url(os.getenv ("survey_url"))
-            ws = sh.worksheet_by_title("工作表1")   #在哪個工作表作業
+            ws = sh.worksheet_by_title("未發貨")   #在哪個工作表作業
             val = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
             val.to_csv("mm.txt")
             update_time=new_time
@@ -62,7 +62,7 @@ def readdata(new_time,update＿time):
         file=os.getenv ("file")#權杖位置
         gc = pygsheets.authorize(service_file=file)
         sh = gc.open_by_url(os.getenv ("survey_url"))
-        ws = sh.worksheet_by_title("工作表1")   #在哪個工作表作業
+        ws = sh.worksheet_by_title("未發貨")   #在哪個工作表作業
         val = ws.get_as_df(start='A1', index_colum=1, empty_value='', include_tailing_empty=False,numerize=False) # index 從 1 開始算
         val.to_csv("mm.txt")        
         print("初始化完成")
